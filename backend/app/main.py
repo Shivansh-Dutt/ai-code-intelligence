@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from sqlalchemy import text
 
+from app.api.repositories import router as repositories_router
 from app.db.session import engine
 
 app = FastAPI(
@@ -8,6 +9,7 @@ app = FastAPI(
     version="0.1.0",
 )
 
+app.include_router(repositories_router)
 
 @app.get("/health")
 async def health_check() -> dict[str, str]:
