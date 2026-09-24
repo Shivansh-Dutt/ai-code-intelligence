@@ -31,3 +31,4 @@ Thumbs.db
 # Project data
 data/
 tmp/
+*.egg-info/
