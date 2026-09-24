@@ -1,0 +1,2 @@
+class RepositoryAlreadyExistsError(Exception):
+    pass
