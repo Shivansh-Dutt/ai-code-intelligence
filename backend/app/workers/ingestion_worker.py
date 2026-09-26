@@ -1,18 +1,16 @@
 from datetime import datetime, timezone
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from uuid import UUID
-
-from sqlalchemy.orm import Session
 
 from app.db.session import SessionLocal
 from app.ingestion.clone import clone_repository
 from app.ingestion.files import discover_source_files
-from app.models.ingestion_job import (
-    IngestionJob,
-    IngestionStatus
-)
+from app.models.ingestion_job import IngestionJob, IngestionStatus
 from app.models.repository import Repository
-from pathlib import Path
-from tempfile import TemporaryDirectory
+from app.services.repository_file_service import create_repository_file
+from sqlalchemy.orm import Session
+
 
 def run_ingestion_job(job_id: UUID) -> None:
     db: Session = SessionLocal()
@@ -54,10 +52,25 @@ def run_ingestion_job(job_id: UUID) -> None:
                 repository_path,
             )
             
+            files = discover_source_files(
+    repository_path,
+)
+
+            for file_path in files:
+                create_repository_file(
+                    db=db,
+                    repository_id=repository.id,
+                    repository_root=repository_path,
+                    file_path=file_path,
+                )
+            
+            db.commit()
+            
             print(
                 f"Ingestion job {job.id}: "
                 f"discovered {len(files)} source files"
             )
+
             
         job.status = IngestionStatus.COMPLETED
         job.completed_at = datetime.now(timezone.utc)
