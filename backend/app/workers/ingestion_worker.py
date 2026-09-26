@@ -10,7 +10,11 @@ from app.models.ingestion_job import IngestionJob, IngestionStatus
 from app.models.repository import Repository
 from app.services.repository_file_service import create_repository_file
 from sqlalchemy.orm import Session
-
+from app.ingestion.content import read_source_file
+from app.ingestion.chunking import chunk_source
+from app.services.repository_chunk_service import (
+    create_repository_chunk
+)
 
 def run_ingestion_job(job_id: UUID) -> None:
     db: Session = SessionLocal()
@@ -57,12 +61,26 @@ def run_ingestion_job(job_id: UUID) -> None:
 )
 
             for file_path in files:
-                create_repository_file(
+                repository_file = create_repository_file(
                     db=db,
                     repository_id=repository.id,
                     repository_root=repository_path,
                     file_path=file_path,
                 )
+                
+                content = read_source_file(file_path)
+                
+                if content is None:
+                    continue
+                
+                chunks = chunk_source(content)
+                
+                for chunk in chunks:
+                    create_repository_chunk(
+                        db = db,
+                        file_id = repository_file.id,
+                        chunk = chunk,
+                    )
             
             db.commit()
             

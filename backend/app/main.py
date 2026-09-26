@@ -2,9 +2,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
-from app.api.repositories import router as repositories_router
-from app.api.repository_files import router as repositories_files_router
 from app.api.ingestion import router as ingestion_router
+from app.api.repositories import router as repositories_router
+from app.api.repository_chunks import (
+    router as repository_chunks_router,
+)
+from app.api.repository_files import router as repositories_files_router
 from app.db.session import engine
 
 app = FastAPI(
@@ -26,6 +29,7 @@ app.add_middleware(
 app.include_router(repositories_router)
 app.include_router(ingestion_router)
 app.include_router(repositories_files_router)
+app.include_router(repository_chunks_router)
 
 @app.get("/health")
 async def health_check() -> dict[str, str]:
