@@ -8,6 +8,8 @@ from app.api.repository_chunks import (
     router as repository_chunks_router,
 )
 from app.api.repository_files import router as repositories_files_router
+from app.api.search import router as search_router
+from app.api.qa import router as qa_router
 from app.db.session import engine
 
 app = FastAPI(
@@ -30,6 +32,8 @@ app.include_router(repositories_router)
 app.include_router(ingestion_router)
 app.include_router(repositories_files_router)
 app.include_router(repository_chunks_router)
+app.include_router(search_router)
+app.include_router(qa_router)
 
 @app.get("/health")
 async def health_check() -> dict[str, str]:

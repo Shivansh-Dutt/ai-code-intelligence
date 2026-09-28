@@ -15,6 +15,7 @@ from app.ingestion.chunking import chunk_source
 from app.services.repository_chunk_service import (
     create_repository_chunk
 )
+from app.services.embedding_service import embed_chunks
 
 def run_ingestion_job(job_id: UUID) -> None:
     db: Session = SessionLocal()
@@ -75,13 +76,45 @@ def run_ingestion_job(job_id: UUID) -> None:
                 
                 chunks = chunk_source(content)
                 
-                for chunk in chunks:
-                    create_repository_chunk(
-                        db = db,
-                        file_id = repository_file.id,
-                        chunk = chunk,
+                created_chunks = []
+                
+                for file_path in files:
+                    repository_file = create_repository_file(
+                        db=db,
+                        repository_id=repository.id,
+                        repository_root=repository_path,
+                        file_path=file_path,
                     )
-            
+                
+                    content = read_source_file(file_path)
+                
+                    if content is None:
+                        continue
+                    
+                    chunks = chunk_source(content)
+                
+                    for chunk in chunks:
+                        repository_chunk = create_repository_chunk(
+                            db=db,
+                            file_id=repository_file.id,
+                            chunk=chunk,
+                        )
+                
+                        created_chunks.append(repository_chunk)
+                
+                db.flush()
+                
+                chunks_to_embed = [
+                    chunk
+                    for chunk in created_chunks
+                    if chunk.embedding is None
+                ]
+                
+                embed_chunks(
+                    db=db,
+                    chunks=chunks_to_embed,
+                )
+                
             db.commit()
             
             print(

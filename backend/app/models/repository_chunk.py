@@ -14,6 +14,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
 
+from pgvector.sqlalchemy import Vector
 
 class RepositoryChunk(Base):
     __tablename__ = "repository_chunks"
@@ -52,6 +53,11 @@ class RepositoryChunk(Base):
     content: Mapped[str] = mapped_column(
         Text,
         nullable=False,
+    )
+    
+    embedding: Mapped[list[float] | None] = mapped_column(
+        Vector(384),
+        nullable=True
     )
     
     created_at: Mapped[datetime] = mapped_column(
