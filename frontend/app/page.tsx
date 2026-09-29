@@ -6,30 +6,39 @@ import { RepositoryForm } from "@/components/repository-form";
 import { RepositoryList } from "@/components/repository-list";
 
 export default function Home() {
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [refreshKey, setRefreshKey] =
+    useState(0);
 
   function handleRepositoryCreated() {
-    setRefreshKey((value) => value + 1);
+    setRefreshKey(
+      (value) => value + 1,
+    );
   }
 
   return (
     <main className="mx-auto min-h-screen max-w-4xl px-6 py-12">
-      <h1 className="text-3xl font-bold">
-        AI Code Intelligence
-      </h1>
+      <header>
+        <h1 className="text-3xl font-bold">
+          AI Code Intelligence
+        </h1>
 
-      <p className="mt-2 text-gray-600">
-        Add a GitHub repository to begin analyzing its
-        codebase.
-      </p>
+        <p className="mt-2 text-gray-600">
+          Add a GitHub repository to begin
+          analyzing its codebase.
+        </p>
+      </header>
 
-      <div className="mt-8">
+      <section className="mt-8 rounded-xl border border-gray-200 bg-white p-6">
         <RepositoryForm
-          onCreated={handleRepositoryCreated}
+          onCreated={
+            handleRepositoryCreated
+          }
         />
-      </div>
+      </section>
 
-      <RepositoryList refreshKey={refreshKey} />
+      <RepositoryList
+        refreshKey={refreshKey}
+      />
     </main>
   );
 }
