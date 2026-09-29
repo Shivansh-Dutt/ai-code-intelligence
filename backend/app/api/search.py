@@ -4,9 +4,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
-from app.embeddings.huggingface_provider import (
-    HuggingFaceEmbeddingProvider,
-)
+from app.embeddings.huggingface_provider import HuggingFaceEmbeddingProvider
 from app.services.search_service import search_repository
 
 
@@ -38,12 +36,12 @@ def semantic_search(
 
     return [
         {
-            "file_id": file.id,
-            "path": file.path,
-            "start_line": chunk.start_line,
-            "end_line": chunk.end_line,
-            "content": chunk.content,
-            "distance": float(distance),
+            "file_id": result.file_id,
+            "path": result.path,
+            "start_line": result.start_line,
+            "end_line": result.end_line,
+            "content": result.content,
+            "distance": float(result.distance),
         }
-        for chunk, file, distance in results
+        for result in results
     ]

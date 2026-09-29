@@ -27,7 +27,7 @@ def ask_repository(
     request: CodeQuestion,
     db: Session = Depends(get_db),
 ):
-    answer = answer_code_question(
+    res = answer_code_question(
         db = db,
         repository_id= repository_id,
         question=request.question,
@@ -35,6 +35,7 @@ def ask_repository(
     )
     
     return {
-        "answer": answer,
+        "answer": res.answer,
+        "sources": res.sources
     }
     

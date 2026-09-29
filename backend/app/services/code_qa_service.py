@@ -2,12 +2,28 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
-from app.embeddings.huggingface_provider import (
-    HuggingFaceEmbeddingProvider,
+from app.embeddings.registry import (
+    get_embedding_provider,
 )
-from app.llm.groq_provider import GroqProvider
+from app.llm.registry import (
+    get_llm_provider,
+)
+from app.services.retrieval import (
+    build_context,
+    deduplicate_results,
+)
 from app.services.search_service import search_repository
 
+from dataclasses import dataclass
+
+from app.services.retrieval import (
+    RetrievalResult,
+)
+
+@dataclass(frozen=True)
+class CodeAnswer:
+    answer: str
+    sources: list[RetrievalResult]
 
 SYSTEM_PROMPT = """
 You are an AI code intelligence assistant.
@@ -16,15 +32,15 @@ Answer questions about the repository using only
 the supplied source-code context.
 
 Citation requirements:
-- Cite every important factual claim about the code.
-- Use the exact file path and line range supplied in context.
+- Cite important factual claims about the code.
+- Use the exact file path and line range supplied
+  in the context.
 - Format citations as [path:start-end].
-- Never invent a file path or line range.
-- If the context does not contain enough information,
-  explicitly say that the available context is insufficient.
+- Never invent a citation.
+- Never invent a file, function, class, or behavior.
+- If the supplied context is insufficient, say so.
 
-Be precise and concise.
-Distinguish directly observed code behavior from inference.
+Be concise and technically precise.
 """
 
 
@@ -32,11 +48,10 @@ def answer_code_question(
     db: Session,
     repository_id: UUID,
     question: str,
-    limit: int = 8,
+    limit: int = 10,
 ) -> str:
-    embedding_provider = (
-        HuggingFaceEmbeddingProvider()
-    )
+
+    embedding_provider = get_embedding_provider()
 
     query_embedding = embedding_provider.embed(
         question
@@ -49,34 +64,35 @@ def answer_code_question(
         limit=limit,
     )
 
-    context_parts = []
+    results = deduplicate_results(results)
 
-    for chunk, file, distance in results:
-        context_parts.append(
-            f"""
-        SOURCE_ID: {chunk.id}
-        FILE: {file.path}
-        LINES: {chunk.start_line}-{chunk.end_line}
-        
-        {chunk.content}
-        """
+    context = build_context(results)
+
+    if not context:
+        return (
+            "I couldn't find sufficiently relevant "
+            "code in this repository to answer that "
+            "question."
         )
-
-    context = "\n---\n".join(context_parts)
 
     user_prompt = f"""
 Repository question:
 
 {question}
 
-Repository context:
+Retrieved repository context:
 
 {context}
 """
 
-    llm = GroqProvider()
+    llm = get_llm_provider()
 
-    return llm.generate(
+    answer =  llm.generate(
         system_prompt=SYSTEM_PROMPT,
         user_prompt=user_prompt,
+    )
+    
+    return CodeAnswer(
+        answer=answer,
+        sources=results,
     )
