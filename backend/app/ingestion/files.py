@@ -30,6 +30,8 @@ SOURCE_EXTENSIONS = {
     ".swift",
     ".kt",
     ".kts",
+    ".ipynb",
+    ".txt",
 }
 
 def discover_source_files(

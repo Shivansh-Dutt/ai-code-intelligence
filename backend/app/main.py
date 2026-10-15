@@ -12,14 +12,19 @@ from app.api.search import router as search_router
 from app.api.qa import router as qa_router
 from app.db.session import engine
 
+import os
+
 app = FastAPI(
     title="AI Code Intelligence API",
     version="0.1.0",
 )
 
+frontend_url = os.getenv("FRONTEND_URL", "")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        frontend_url,
         "http://localhost:3000",
         "http://127.0.0.1:3000",
     ],

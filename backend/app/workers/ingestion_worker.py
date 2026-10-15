@@ -73,7 +73,7 @@ def run_ingestion_job(job_id: UUID) -> None:
                 github_url=repository.github_url,
                 destination=repository_path,
             )
-
+            
             files = discover_source_files(
                 repository_path,
             )
