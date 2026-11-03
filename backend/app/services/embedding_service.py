@@ -1,12 +1,10 @@
 from sqlalchemy.orm import Session
 
-from app.embeddings.huggingface_provider import (
-    HuggingFaceEmbeddingProvider,
-)
+from app.embeddings.registry import get_embedding_provider
 from app.models.repository_chunk import RepositoryChunk
 
 
-EMBEDDING_BATCH_SIZE = 100
+EMBEDDING_BATCH_SIZE = 32
 
 
 def embed_chunks(
@@ -16,7 +14,7 @@ def embed_chunks(
     if not chunks:
         return
 
-    provider = HuggingFaceEmbeddingProvider()
+    provider = get_embedding_provider()
 
     for start in range(
         0,

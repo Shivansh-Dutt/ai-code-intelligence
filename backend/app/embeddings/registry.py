@@ -1,9 +1,10 @@
 from functools import lru_cache
 
-from app.embeddings.huggingface_provider import (
-    HuggingFaceEmbeddingProvider
+from app.embeddings.local_provider import (
+    LocalEmbeddingProvider,
 )
+
 
 @lru_cache(maxsize=1)
 def get_embedding_provider():
-    return HuggingFaceEmbeddingProvider()
+    return LocalEmbeddingProvider()

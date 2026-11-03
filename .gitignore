@@ -32,3 +32,6 @@ Thumbs.db
 data/
 tmp/
 *.egg-info/
+
+# Local embedding model cache
+backend/models/

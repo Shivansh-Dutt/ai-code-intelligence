@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
-from app.embeddings.huggingface_provider import HuggingFaceEmbeddingProvider
+from app.embeddings.registry import get_embedding_provider
 from app.services.search_service import search_repository
 
 
@@ -23,7 +23,7 @@ def semantic_search(
     limit: int = 10,
     db: Session = Depends(get_db),
 ):
-    provider = HuggingFaceEmbeddingProvider()
+    provider = get_embedding_provider()
 
     query_embedding = provider.embed(q)
 
